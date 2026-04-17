@@ -1,0 +1,60 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+    
+    - name: Install dependencies
+      run: npm install -g cordova
+    
+    - name: Add Android platform
+      run: cordova platform add android@latest
+    
+    - name: Build APK
+      run: cordova build android --release
+    
+    - name: Upload APK as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Reverse-Escape-APK
+        path: platforms/android/app/build/outputs/apk/release/app-release.apk
+    
+    - name: Create Release
+      if: success()
+      uses: softprops/action-gh-release@v1
+      with:
+        files: platforms/android/app/build/outputs/apk/release/app-release.apk
+        tag_name: v1.0.0-${{ github.run_number }}
+        body: |
+          APK automatically built from GitHub Actions
+          
+          📱 Download and install on your Android device
+          
+          **Installation steps:**
+          1. Enable Unknown Sources in Settings > Security
+          2. Download the APK from releases
+          3. Tap the APK file to install
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

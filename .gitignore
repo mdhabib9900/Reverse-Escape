@@ -1,0 +1,9 @@
+node_modules/
+platforms/
+plugins/
+*.apk
+*.log
+.DS_Store
+*.xcarchive
+build/
+dist/
